@@ -23,6 +23,12 @@ public class BorderInteractionListener implements Listener {
     public void onInteract(PlayerInteractEvent event) {
         Action action = event.getAction();
 
+        // Block all interactions during pause (unless OP)
+        if (plugin.getGameManager().isPauseActive() && !event.getPlayer().isOp()) {
+            event.setCancelled(true);
+            return;
+        }
+
         // Check all interaction types that could affect blocks
         if (action != Action.RIGHT_CLICK_BLOCK &&
                 action != Action.LEFT_CLICK_BLOCK &&

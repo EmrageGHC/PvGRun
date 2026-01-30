@@ -21,6 +21,12 @@ public class BorderBlockDamageListener implements Listener {
         Player player = event.getPlayer();
         Location loc = event.getBlock().getLocation();
 
+        // Block all block damage during pause
+        if (plugin.getGameManager().isPauseActive() && !player.isOp()) {
+            event.setCancelled(true);
+            return;
+        }
+
         // If player is damaging a ghost border block, cancel it
         if (plugin.getBorderManager().isLocationShownForPlayer(player, loc)) {
             event.setCancelled(true);

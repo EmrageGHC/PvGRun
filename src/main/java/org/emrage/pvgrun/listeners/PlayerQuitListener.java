@@ -23,6 +23,9 @@ public class PlayerQuitListener implements Listener {
         Player p = event.getPlayer();
         var gm = plugin.getGameManager();
 
+        // Always suppress default quit message
+        try { event.quitMessage(Component.empty()); } catch (Exception ignored) {}
+
         // Remove scoreboard for quitting player
         plugin.getScoreboardManager().removePlayer(p);
 

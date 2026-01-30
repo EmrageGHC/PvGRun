@@ -12,6 +12,8 @@ commands:
     description: Teste Icons
   twitchchat:
     description: Twitch Chat Display verwalten
+    usage: /twitchchat
+    permission: pvgrun.twitchchat
   setnetherspawn:
     description: Setzt den Spawnpunkt im Nether an deiner aktuellen Position
     usage: /setnetherspawn
@@ -20,3 +22,58 @@ commands:
     description: Toggles a preview of the game scoreboard (Admin)
     usage: /scorepreview
     permission: pvgrun.scorepreview
+  settings:
+    description: Configure game settings in lobby (mode switch)
+    usage: /settings
+    permission: pvgrun.settings
+  admin:
+    description: Admin commands
+    usage: /admin
+    permission: pvgrun.admin
+  reload:
+    description: Reloads the plugin configuration
+    usage: /reload
+    permission: pvgrun.reload
+  stop:
+    description: Stops the plugin
+    usage: /stop
+    permission: pvgrun.stop
+  adminpause:
+    description: Pauses the game for admins
+    usage: /adminpause
+    permission: pvgrun.adminpause
+  teamadmin:
+    description: Team management commands for admins
+    usage: /teamadmin
+    permission: pvgrun.teamadmin
+  backpack:
+    description: Öffnet das Team-Backpack (Dimension-Modus)
+    usage: /backpack
+    aliases: [bp]
+    permission: pvgrun.backpack
+
+permissions:
+  pvgrun.twitchchat:
+    description: Allows usage of /twitchchat commands
+    default: op
+  pvgrun.settings:
+    description: Allows usage of /settings command
+    default: op
+  pvgrun.admin:
+    description: Allows usage of admin commands
+    default: op
+  pvgrun.reload:
+    description: Allows reloading of the plugin configuration
+    default: op
+  pvgrun.stop:
+    description: Allows stopping of the plugin
+    default: op
+  pvgrun.adminpause:
+    description: Allows usage of /adminpause command
+    default: op
+  pvgrun.teamadmin:
+    description: Allows usage of /teamadmin command
+    default: op
+  pvgrun.backpack:
+    description: Allows usage of /backpack command
+    default: true

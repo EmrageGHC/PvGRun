@@ -1,15 +1,16 @@
-package org.emrage.pvgrun. listeners;
+package org.emrage.pvgrun.listeners;
 
-import org.bukkit. Bukkit;
-import org.bukkit. Difficulty;
+import org.bukkit.Bukkit;
+import org.bukkit.Difficulty;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event. Listener;
+import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta. SkullMeta;
-import org.emrage.pvgrun. Main;
+import org.bukkit.inventory.meta.SkullMeta;
+import org.emrage.pvgrun.Main;
 import org.emrage.pvgrun.managers.ConfigGUI;
 import org.emrage.pvgrun.managers.ExcludePlayersGUI;
 
@@ -41,10 +42,10 @@ public class ConfigGUIListener implements Listener {
                 int current = config.getBorderRadius();
                 int change = 0;
                 if (click == ClickType.LEFT) change = -10;
-                else if (click == ClickType. RIGHT) change = 10;
-                else if (click == ClickType. SHIFT_LEFT) change = -50;
+                else if (click == ClickType.RIGHT) change = 10;
+                else if (click == ClickType.SHIFT_LEFT) change = -50;
                 else if (click == ClickType.SHIFT_RIGHT) change = 50;
-                
+
                 int newVal = Math.max(50, Math.min(500, current + change));
                 config.setBorderRadius(newVal);
                 new ConfigGUI(plugin, p).open();
@@ -58,7 +59,7 @@ public class ConfigGUIListener implements Listener {
                 else if (click == ClickType.RIGHT) change = 5 * 60;
                 else if (click == ClickType.SHIFT_LEFT) change = -15 * 60;
                 else if (click == ClickType.SHIFT_RIGHT) change = 15 * 60;
-                
+
                 int newVal = Math.max(60, Math.min(7200, current + change));
                 config.setGameDurationSeconds(newVal);
                 new ConfigGUI(plugin, p).open();
@@ -66,21 +67,21 @@ public class ConfigGUIListener implements Listener {
 
             // Mob Spawn Delay (slot 14)
             else if (slot == 14) {
-                int current = config.getMobSpawnDelaySeconds();
+                int current = config.getMobSpawnDelaySeconds() / 60;
                 int change = 0;
-                if (click == ClickType.LEFT) change = -60;
-                else if (click == ClickType.RIGHT) change = 60;
-                else if (click == ClickType.SHIFT_LEFT) change = -5 * 60;
-                else if (click == ClickType. SHIFT_RIGHT) change = 5 * 60;
-                
-                int newVal = Math. max(0, Math.min(3600, current + change));
-                config.setMobSpawnDelaySeconds(newVal);
+                if (click == ClickType.LEFT) change = -1;
+                else if (click == ClickType.RIGHT) change = 1;
+                else if (click == ClickType.SHIFT_LEFT) change = -5;
+                else if (click == ClickType.SHIFT_RIGHT) change = 5;
+
+                int newVal = Math.max(0, Math.min(3600 / 60, current + change));
+                config.setMobSpawnDelaySeconds(newVal * 60);
                 new ConfigGUI(plugin, p).open();
             }
 
             // Ultra Hardcore (slot 16)
             else if (slot == 16) {
-                config.setUltraHardcore(! config.isUltraHardcore());
+                config.setUltraHardcore(!config.isUltraHardcore());
                 new ConfigGUI(plugin, p).open();
             }
 
@@ -89,11 +90,11 @@ public class ConfigGUIListener implements Listener {
                 Difficulty current = config.getDifficulty();
                 Difficulty[] values = Difficulty.values();
                 int idx = 0;
-                for (int i = 0; i < values. length; i++) {
+                for (int i = 0; i < values.length; i++) {
                     if (values[i] == current) { idx = i; break; }
                 }
                 idx = (idx + 1) % values.length;
-                config. setDifficulty(values[idx]);
+                config.setDifficulty(values[idx]);
                 new ConfigGUI(plugin, p).open();
             }
 
@@ -113,7 +114,6 @@ public class ConfigGUIListener implements Listener {
                 String current = config.getGameMode();
                 String next = current.equals("dimension") ? "normal" : "dimension";
                 config.setGameMode(next);
-                // Hier ggf. Welten pre-rendern, falls nötig (später implementieren)
                 new ConfigGUI(plugin, p).open();
             }
         }
@@ -123,7 +123,7 @@ public class ConfigGUIListener implements Listener {
             event.setCancelled(true);
             int slot = event.getSlot();
             ItemStack item = event.getCurrentItem();
-            
+
             if (item == null) return;
 
             // Back button
@@ -139,19 +139,29 @@ public class ConfigGUIListener implements Listener {
                     String name = meta.getOwningPlayer().getName();
                     var config = plugin.getConfigManager();
                     var excluded = config.getExcludedPlayers();
-                    
+
                     if (excluded.contains(name)) {
                         config.removeExcludedPlayer(name);
-                        plugin.getPlayerDataManager().unexclude(Bukkit.getPlayerExact(name));
+                        Player target = Bukkit.getPlayerExact(name);
+                        if (target != null) plugin.getPlayerDataManager().unexclude(target);
                     } else {
-                        config. addExcludedPlayer(name);
+                        config.addExcludedPlayer(name);
                         Player target = Bukkit.getPlayerExact(name);
                         if (target != null) plugin.getPlayerDataManager().exclude(target);
                     }
-                    
+
                     new ExcludePlayersGUI(plugin, p).open();
                 }
             }
+        }
+    }
+
+    @EventHandler
+    public void onDrag(InventoryDragEvent event) {
+        if (!(event.getWhoClicked() instanceof Player)) return;
+        String title = event.getView().title().toString();
+        if (title.contains("Deathrun Konfiguration") || title.contains("Spieler Ausschließen")) {
+            event.setCancelled(true);
         }
     }
 }

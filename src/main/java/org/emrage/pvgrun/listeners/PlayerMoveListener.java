@@ -1,13 +1,13 @@
-package org. emrage.pvgrun.listeners;
+package org.emrage.pvgrun.listeners;
 
-import org.bukkit. Location;
-import org.bukkit. Sound;
-import org.bukkit. World;
-import org.bukkit. entity.Player;
-import org. bukkit.event.EventHandler;
+import org.bukkit.Location;
+import org.bukkit.Sound;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org. bukkit.event.player.PlayerMoveEvent;
-import org. bukkit.util.Vector;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.util.Vector;
 import org.emrage.pvgrun.Main;
 
 public class PlayerMoveListener implements Listener {
@@ -20,7 +20,20 @@ public class PlayerMoveListener implements Listener {
         Player p = event.getPlayer();
         var gm = plugin.getGameManager();
 
-        if (gm.getState() != org.emrage.pvgrun. enums.GameState.RUNNING) return;
+        // If pause is active, prevent position changes but allow head rotation
+        if (gm != null && gm.isPauseActive()) {
+            Location from = event.getFrom();
+            Location to = event.getTo();
+            if (to == null) return;
+            // allow only rotation changes: keep position identical but copy yaw/pitch from 'to'
+            Location allowed = from.clone();
+            allowed.setYaw(to.getYaw());
+            allowed.setPitch(to.getPitch());
+            event.setTo(allowed);
+            return;
+        }
+
+        if (gm == null || gm.getState() != org.emrage.pvgrun.enums.GameState.RUNNING) return;
 
         if (plugin.getPlayerDataManager().isExcluded(p) || plugin.getPlayerDataManager().isDead(p)) {
             plugin.getBorderManager().removeDisplaysFor(p);
@@ -34,8 +47,7 @@ public class PlayerMoveListener implements Listener {
         // Check for significant movement (avoid spam for micro-movements like head rotation)
         if (from.distanceSquared(to) < 0.01) return;
 
-        World world = p.getWorld();
-        double rx = org.emrage.pvgrun. managers.BorderManager. RADIUS;
+        double rx = org.emrage.pvgrun.managers.BorderManager.RADIUS;
 
         // Check if player tries to cross the border
         boolean crossingEast = from.getX() <= rx && to.getX() > rx;
@@ -56,7 +68,7 @@ public class PlayerMoveListener implements Listener {
 
             p.setVelocity(vel);
             p.playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_FLAP, 0.5f, 1.5f);
-            p.sendActionBar(org.emrage.pvgrun. util.MessageUtils.c("<#FF5555><bold>⚠ Border! </bold>"));
+            p.sendActionBar(org.emrage.pvgrun.util.MessageUtils.c("<#FF5555><bold>⚠ Border! </bold>"));
             return;
         }
 
@@ -65,9 +77,13 @@ public class PlayerMoveListener implements Listener {
 
         // Compute distance to NORTH (spawnZ - playerZ)
         Location spawn = gm.getSpawnLocation();
-        double dist = Math.max(0.0, spawn.getZ() - to.getZ());
+        double raw = spawn.getZ() - to.getZ();
+        // Use block-based integer distance (meters) to avoid fractional rounding jitter
+        int blockDist = Math.max(0, (int) Math.floor(raw));
+
+        int playerBlockZ = (int) Math.floor(to.getZ());
 
         double current = plugin.getPlayerDataManager().getStoredDistance(p.getName());
-        if (dist > current) plugin.getPlayerDataManager().updateDistance(p, dist);
+        if (blockDist > current) plugin.getPlayerDataManager().updateDistanceByBlockZ(p, blockDist, playerBlockZ);
     }
 }

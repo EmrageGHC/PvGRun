@@ -38,8 +38,10 @@ public class Main extends JavaPlugin {
         this.teamManager = new TeamManager();
         this.banManager = new BanManager();
         this.twitchChatManager = new TwitchChatDisplayManager(this);
-        this.teamBackpackManager = new TeamBackpackManager();
+        this.teamBackpackManager = new TeamBackpackManager(this);
         this.bossBarManager = new BossBarManager(this);
+        // Load persisted backpacks
+        try { this.teamBackpackManager.loadAll(); } catch (Exception ignored) {}
 
         // Welten mit echtem Singlebiom generieren, falls Dimension-Modus
         if (getConfigManager().getGameMode().equals("dimension")) {
@@ -63,6 +65,7 @@ public class Main extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerQuitListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerMoveListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerDamageListener(this), this);
+        getServer().getPluginManager().registerEvents(new org.emrage.pvgrun.listeners.PlayerDeathFallbackListener(this), this);
         getServer().getPluginManager().registerEvents(new BlockListener(this), this);
         getServer().getPluginManager().registerEvents(new ItemListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerKickListener(this), this);
@@ -70,6 +73,7 @@ public class Main extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new ChatListener(this), this);
         getServer().getPluginManager().registerEvents(new DimensionSelectionListener(this), this);
         getServer().getPluginManager().registerEvents(new TeamRequestListener(this), this);
+        getServer().getPluginManager().registerEvents(new BackpackListener(this), this);
 
         // protection & misc listeners
         getServer().getPluginManager().registerEvents(new BorderProtectionListener(this), this);
@@ -86,13 +90,19 @@ public class Main extends JavaPlugin {
         if (getCommand("backpack") != null) getCommand("backpack").setExecutor(new org.emrage.pvgrun.commands.BackpackCommand(this));
         if (getCommand("setnetherspawn") != null) getCommand("setnetherspawn").setExecutor(new SetNetherSpawnCommand(this));
         if (getCommand("scorepreview") != null) getCommand("scorepreview").setExecutor(new ScorePreviewCommand(this));
+        // register twitchchat command
+        if (getCommand("twitchchat") != null) getCommand("twitchchat").setExecutor(new org.emrage.pvgrun.commands.TwitchChatCommand(this));
+        // register settings command
+        if (getCommand("settings") != null) getCommand("settings").setExecutor(new org.emrage.pvgrun.commands.SettingsCommand(this));
+        if (getCommand("adminpause") != null) getCommand("adminpause").setExecutor(new org.emrage.pvgrun.commands.AdminPauseCommand(this));
+        if (getCommand("teamadmin") != null) getCommand("teamadmin").setExecutor(new org.emrage.pvgrun.commands.TeamAdminCommand(this));
 
         // Start Twitch chat display
         org.bukkit.Bukkit.getScheduler().runTaskLater(this, () -> {
             org.bukkit.World world = org.bukkit.Bukkit.getWorld("world");
             if (world != null) {
                 org.bukkit.Location loc = new org.bukkit.Location(world, 0, 100, 0);
-                twitchChatManager.start("HardcorePvG", loc);
+                twitchChatManager.start("HardcorePvG", loc, "EmrageGHC");
             }
         }, 40L); // Wait 2 seconds after server start
 
@@ -108,6 +118,7 @@ public class Main extends JavaPlugin {
         if (twitchChatManager != null && twitchChatManager.isRunning()) {
             twitchChatManager.stop();
         }
+        try { this.teamBackpackManager.saveAll(); } catch (Exception ignored) {}
         getLogger().info("PvG-Run disabled");
     }
 

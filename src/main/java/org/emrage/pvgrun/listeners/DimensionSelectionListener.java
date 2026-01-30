@@ -1,10 +1,9 @@
- package org.emrage.pvgrun.listeners;
+package org.emrage.pvgrun.listeners;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.entity.Player;
-import org.emrage.pvgrun.managers.DimensionSelectionMenu;
 import org.emrage.pvgrun.Main;
 
 public class DimensionSelectionListener implements Listener {
@@ -13,19 +12,19 @@ public class DimensionSelectionListener implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player)) return;
-        Player p = (Player) event.getWhoClicked();
-        if (event.getView().getTitle().equals("Dimension wählen")) {
-            // Hier müsste die aktuelle Menu-Instanz gefunden werden, ggf. über Mapping
-            // Für Demo: Einfach Auswahl Overworld/Nether setzen
-            if (event.getSlot() == 3) {
-                plugin.getTeamManager().getTeam(p).setDimension("overworld");
-            } else if (event.getSlot() == 5) {
-                plugin.getTeamManager().getTeam(p).setDimension("nether");
-            }
-            p.closeInventory();
-            event.setCancelled(true);
+        if (!(event.getWhoClicked() instanceof Player p)) return;
+        String title = event.getView().title().toString();
+        if (!title.contains("Dimension wählen")) return;
+
+        event.setCancelled(true);
+        int slot = event.getSlot();
+        var team = plugin.getTeamManager().getTeam(p);
+        if (team == null) { p.closeInventory(); return; }
+        if (slot == 10) {
+            team.setPlayerDimension(p.getUniqueId(), "overworld");
+        } else if (slot == 16) {
+            team.setPlayerDimension(p.getUniqueId(), "nether");
         }
+        p.closeInventory();
     }
 }
-

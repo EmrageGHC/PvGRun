@@ -104,6 +104,15 @@ public class ConfigManager {
         save();
     }
 
+    public boolean isNetherSpawnSet() {
+        return config.getBoolean("nether-spawn-set", false);
+    }
+
+    public void setNetherSpawnSet(boolean set) {
+        config.set("nether-spawn-set", set);
+        save();
+    }
+
     private void save() {
         plugin.saveConfig();
     }

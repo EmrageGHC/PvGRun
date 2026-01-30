@@ -19,8 +19,9 @@ public class FoodLevelChangeListener implements Listener {
         if (!(event.getEntity() instanceof Player)) return;
         Player p = (Player) event.getEntity();
         if (plugin.getGameManager() == null) return;
-        if (plugin.getGameManager().getState() == org.emrage.pvgrun.enums.GameState.LOBBY) {
-            // cancel hunger change in lobby (keeps players at full food)
+        var gm = plugin.getGameManager();
+        if (gm.getState() == org.emrage.pvgrun.enums.GameState.LOBBY || gm.getState() == org.emrage.pvgrun.enums.GameState.PREPARING || gm.isPauseActive()) {
+            // cancel hunger change in lobby/prepare/pause (keeps players at full food)
             event.setCancelled(true);
             p.setFoodLevel(20);
         }

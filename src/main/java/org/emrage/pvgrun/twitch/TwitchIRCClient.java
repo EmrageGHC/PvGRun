@@ -89,39 +89,16 @@ public class TwitchIRCClient {
         }
 
         // Parse PRIVMSG (chat messages)
-        // Format: @badge-info=;badges=moderator/1;... :username!username@username.tmi.twitch.tv PRIVMSG #channel :message
+        // Format can be with tags: @... :username!username@username.tmi.twitch.tv PRIVMSG #channel :message
         if (line.contains("PRIVMSG")) {
             try {
-                String username;
-                String message;
-                String badges = "";
+                java.util.regex.Pattern p = java.util.regex.Pattern.compile("^(?:@[^ ]+ )?:([^!\\s]+)!.*? PRIVMSG #[^ ]+ :(.+)$");
+                java.util.regex.Matcher m = p.matcher(line);
+                if (!m.find()) return; // malformed or not a PRIVMSG we can parse
 
-                // Extract badges if present
-                if (line.startsWith("@")) {
-                    int badgeStart = line.indexOf("badges=");
-                    if (badgeStart != -1) {
-                        int badgeEnd = line.indexOf(";", badgeStart);
-                        if (badgeEnd != -1) {
-                            badges = line.substring(badgeStart + 7, badgeEnd);
-                        }
-                    }
-
-                    // Extract username
-                    int userStart = line.indexOf(":", 1);
-                    if (userStart != -1) {
-                        username = line.substring(userStart + 1, line.indexOf('!', userStart));
-                    } else {
-                        return; // Malformed message
-                    }
-                } else {
-                    // Old format without badges
-                    username = line.substring(1, line.indexOf('!'));
-                }
-
-                // Extract message
-                message = line.substring(line.indexOf(':', line.indexOf("PRIVMSG")) + 1);
-
-                ChatMessage chatMsg = new ChatMessage(username, message, badges);
+                String username = m.group(1);
+                String message = m.group(2);
+                ChatMessage chatMsg = new ChatMessage(username, message, "");
 
                 // Call handler on main thread
                 Bukkit.getScheduler().runTask(plugin, () -> messageHandler.accept(chatMsg));
@@ -187,5 +164,3 @@ public class TwitchIRCClient {
         public long getTimestamp() { return timestamp; }
     }
 }
-
-

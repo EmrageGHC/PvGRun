@@ -42,6 +42,11 @@ public class TeamCommand implements CommandExecutor {
                 p.sendMessage(c("<red>Du bist in keinem Team!"));
                 return true;
             }
+            // Only allow renaming while in the lobby
+            if (plugin.getGameManager() == null || plugin.getGameManager().getState() != org.emrage.pvgrun.enums.GameState.LOBBY) {
+                p.sendMessage(c("<red>Teamnamen können nur in der Lobby geändert werden."));
+                return true;
+            }
             String newName = args[1];
             team.setName(newName);
             p.sendMessage(c("<green>Teamname geändert zu <white>" + newName));

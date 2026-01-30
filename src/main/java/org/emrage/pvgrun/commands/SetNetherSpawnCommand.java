@@ -40,8 +40,9 @@ public class SetNetherSpawnCommand implements CommandExecutor {
         wb.setSize(100.0); // Beispielgröße, ggf. anpassen
         wb.setWarningDistance(5);
         wb.setDamageAmount(0);
+        // Markiere im ConfigManager, dass Nether-Spawn gesetzt wurde
+        plugin.getConfigManager().setNetherSpawnSet(true);
         p.sendMessage("§aSpawnpunkt und Border im Nether gesetzt!");
         return true;
     }
 }
-

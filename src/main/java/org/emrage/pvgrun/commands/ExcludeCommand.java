@@ -26,7 +26,7 @@ public class ExcludeCommand implements CommandExecutor {
         }
         plugin.getPlayerDataManager().exclude(target);
         target.setGameMode(org.bukkit.GameMode.SPECTATOR);
-        plugin.getScoreboardManager().addForPlayer(target);
+        plugin.getScoreboardManager().updateFor(target);
         p.sendMessage(c(String.format("<#55FF55>%s wurde ausgeschlossen.", target.getName())));
         return true;
     }

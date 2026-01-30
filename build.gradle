@@ -25,7 +25,7 @@ dependencies {
     compileOnly "io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT"
     implementation 'fr.mrmicky:fastboard:2.1.5'
 
-
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
 }
 
 tasks {
@@ -49,6 +49,13 @@ tasks.withType(JavaCompile). configureEach {
 
     if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
         options.release. set(targetJavaVersion)
+    }
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
     }
 }
 

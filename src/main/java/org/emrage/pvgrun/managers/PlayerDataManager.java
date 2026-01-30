@@ -19,6 +19,7 @@ public class PlayerDataManager {
     private final Set<String> deadPlayers = ConcurrentHashMap.newKeySet();
     private final Set<String> runBannedPlayers = ConcurrentHashMap.newKeySet();
     private final Map<String, Double> bestDistances = new ConcurrentHashMap<>();
+    private final Map<String, Integer> lastSeenBlockZ = new ConcurrentHashMap<>();
     private final Map<String, Integer> heartsLostByPlayer = new ConcurrentHashMap<>();
     private int totalHeartsLost = 0;
 
@@ -53,9 +54,40 @@ public class PlayerDataManager {
                 .count();
     }
 
+    /**
+     * Update stored distance using whole block Z coordinates.
+     * Only update when the player's block Z changed since the last seen block.
+     * This prevents multiple move events for the same block from double-counting.
+     */
+    public void updateDistanceByBlockZ(Player p, int blockDist, int playerBlockZ) {
+        if (p == null || blockDist < 0) return;
+        String name = p.getName();
+        Integer lastZ = lastSeenBlockZ.get(name);
+        if (lastZ != null && lastZ == playerBlockZ) {
+            // same block as last seen -> ignore (prevents duplicate increments)
+            return;
+        }
+        // remember current block Z
+        lastSeenBlockZ.put(name, playerBlockZ);
+
+        double prev = bestDistances.getOrDefault(name, 0.0);
+        int prevInt = (int) Math.floor(prev);
+        if (blockDist > prevInt) {
+            // set stored distance directly to the new blockDist (no incremental logic needed)
+            bestDistances.put(name, (double) blockDist);
+        }
+    }
+
     public void updateDistance(Player p, double dist) {
         if (p == null || dist <= 0) return;
-        bestDistances.merge(p.getName(), dist, Math::max);
+        String name = p.getName();
+        // Use block-based integer distance to avoid fractional rounding jitter
+        int newDist = (int) Math.floor(dist);
+        double prev = bestDistances.getOrDefault(name, 0.0);
+        int prevInt = (int) Math.floor(prev);
+        if (newDist > prevInt) {
+            bestDistances.put(name, (double) newDist);
+        }
     }
 
     public double getStoredDistance(String playerName) { return bestDistances.getOrDefault(playerName, 0.0); }
@@ -99,6 +131,7 @@ public class PlayerDataManager {
         heartsLostByPlayer.clear();
         totalHeartsLost = 0;
         runBannedPlayers.clear();
+        lastSeenBlockZ.clear();
     }
 
     /**
@@ -110,6 +143,7 @@ public class PlayerDataManager {
         bestDistances.clear();
         heartsLostByPlayer.clear();
         totalHeartsLost = 0;
+        lastSeenBlockZ.clear();
         // keep runBannedPlayers
     }
 

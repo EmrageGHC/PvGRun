@@ -15,6 +15,9 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.inventory.InventoryHolder;
+import org.emrage.pvgrun.managers.TeamBackpackHolder;
 
 public class TeamRequestListener implements Listener {
     private final Main plugin;
@@ -117,6 +120,16 @@ public class TeamRequestListener implements Listener {
                 event.getPlayer().sendMessage(c("<gray>Schlage einen Spieler mit dem Team-Item, um ihn ins Team einzuladen!"));
                 event.setCancelled(true);
             }
+        }
+    }
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event) {
+        if (event.getView() == null) return;
+        if (event.getView().getTopInventory() == null) return;
+        InventoryHolder holder = event.getView().getTopInventory().getHolder();
+        if (holder instanceof TeamBackpackHolder) {
+            TeamBackpackHolder h = (TeamBackpackHolder) holder;
+            try { plugin.getTeamBackpackManager().saveBackpack(h.getTeamName()); } catch (Exception ignored) {}
         }
     }
     private boolean isTeamSelector(ItemStack item) {

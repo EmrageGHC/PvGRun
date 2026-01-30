@@ -13,14 +13,14 @@ public class BlockListener implements Listener {
 
     @EventHandler
     public void onBreak(BlockBreakEvent event) {
-        if (plugin.getGameManager().getState() == org.emrage.pvgrun.enums.GameState.LOBBY && !event.getPlayer().isOp()) {
+        if ((plugin.getGameManager().getState() == org.emrage.pvgrun.enums.GameState.LOBBY || plugin.getGameManager().isPauseActive()) && !event.getPlayer().isOp()) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler
     public void onPlace(BlockPlaceEvent event) {
-        if (plugin.getGameManager().getState() == org.emrage.pvgrun.enums.GameState.LOBBY && !event.getPlayer().isOp()) {
+        if ((plugin.getGameManager().getState() == org.emrage.pvgrun.enums.GameState.LOBBY || plugin.getGameManager().isPauseActive()) && !event.getPlayer().isOp()) {
             event.setCancelled(true);
         }
     }

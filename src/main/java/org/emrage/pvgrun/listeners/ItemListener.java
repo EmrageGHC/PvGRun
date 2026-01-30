@@ -16,7 +16,7 @@ public class ItemListener implements Listener {
 
     @EventHandler
     public void onDrop(PlayerDropItemEvent event) {
-        if (plugin.getGameManager().getState() == org.emrage.pvgrun.enums.GameState.LOBBY && !event.getPlayer().isOp()) {
+        if ((plugin.getGameManager().getState() == org.emrage.pvgrun.enums.GameState.LOBBY || plugin.getGameManager().isPauseActive()) && !event.getPlayer().isOp()) {
             event.setCancelled(true);
         }
     }
@@ -25,7 +25,7 @@ public class ItemListener implements Listener {
     public void onPickup(EntityPickupItemEvent event) {
         if (!(event.getEntity() instanceof Player)) return;
         Player p = (Player) event.getEntity();
-        if (plugin.getGameManager().getState() == org.emrage.pvgrun.enums.GameState.LOBBY && !p.isOp()) {
+        if ((plugin.getGameManager().getState() == org.emrage.pvgrun.enums.GameState.LOBBY || plugin.getGameManager().isPauseActive()) && !p.isOp()) {
             event.setCancelled(true);
         }
     }
@@ -33,6 +33,12 @@ public class ItemListener implements Listener {
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
         Player p = event.getPlayer();
+        // Block interaction during pause (unless OP) to prevent menus/actions
+        if (plugin.getGameManager().isPauseActive() && !p.isOp()) {
+            event.setCancelled(true);
+            return;
+        }
+
         if (plugin.getConfigManager().getGameMode().equals("dimension") && event.getItem() != null && event.getItem().getType() == org.bukkit.Material.BLAZE_ROD) {
             var team = plugin.getTeamManager().getTeam(p);
             if (team != null) {
