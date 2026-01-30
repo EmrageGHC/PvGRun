@@ -1,0 +1,22 @@
+name: PvG-Run
+version: '1.0.0'
+main: org.emrage.pvgrun.Main
+api-version: '1.21'
+authors: [ EmrageGHC ]
+commands:
+  start:
+    description: Startet den Deathrun
+  exclude:
+    description: Schließt einen Spieler aus
+  test:
+    description: Teste Icons
+  twitchchat:
+    description: Twitch Chat Display verwalten
+  setnetherspawn:
+    description: Setzt den Spawnpunkt im Nether an deiner aktuellen Position
+    usage: /setnetherspawn
+    permission: pvgrun.setnetherspawn
+  scorepreview:
+    description: Toggles a preview of the game scoreboard (Admin)
+    usage: /scorepreview
+    permission: pvgrun.scorepreview
